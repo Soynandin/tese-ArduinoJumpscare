@@ -1,0 +1,82 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+// Configuração do sensor ultrassônico
+const int triggerPin = 9;
+const int echoPin = 10;
+
+// Configuração da tela OLED
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+long duration;
+int distance;
+
+void setup() {
+  pinMode(triggerPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  
+  // Inicializa a tela OLED
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("Falha ao inicializar o display OLED"));
+    for(;;);
+  }
+  display.clearDisplay();
+  
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Envia pulso ultrassônico
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin, LOW);
+
+  // Lê o tempo de retorno do sinal
+  duration = pulseIn(echoPin, HIGH);
+
+  // Calcula a distância
+  distance = duration * 0.034 / 2;
+
+  // Limpa a tela antes de desenhar novamente
+  display.clearDisplay();
+
+  // Mostra mensagens de acordo com a distância
+  if (distance > 200) {
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0,0);
+    display.println("Aproxime-se!");
+    display.display();
+  }
+  else if (distance <= 200 && distance > 100) {
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0,0);
+    display.println("Mais perto...");
+    display.display();
+  }
+  else if (distance <= 100 && distance > 50) {
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0,0);
+    display.println("Quase la!");
+    display.display();
+  }
+  else if (distance <= 50) {
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0,0);
+    display.println("JUMPSCARE!!!");
+    display.display();
+    // Aqui você pode adicionar o código para exibir uma imagem
+  }
+
+  // Aguarda um curto período antes de repetir
+  delay(500);
+}
